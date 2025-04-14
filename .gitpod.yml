@@ -1,0 +1,19 @@
+tasks:
+  - init: |
+      # Install Go dependencies
+      go mod tidy
+      # Install Go dependencies (including testify for testing)
+      go get github.com/stretchr/testify
+  - command: |
+      # Run tests after the server is started
+      go test -v ./tests
+      # Start the Go application server
+      go run main.go
+
+ports:
+  - port: 8080
+    onOpen: open-preview
+
+vscode:
+  extensions:
+    - ms-go.vscode-go
