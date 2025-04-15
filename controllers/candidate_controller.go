@@ -5,6 +5,7 @@ import (
 
 	"github.com/DAT-CANDIDATE/db"
 	"github.com/DAT-CANDIDATE/models"
+	"github.com/DAT-CANDIDATE/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/bson"
@@ -46,6 +47,13 @@ func CreateCandidate(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, candidate)
+
+	// Publish candidate data to Kafka
+	err = utils.PublishMessage("candidates", candidate.Unique_Id, candidate)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to publish candidate data to Kafka"})
+		return
+	}
 }
 
 // GetCandidate retrieves a candidate by unique id
@@ -125,4 +133,11 @@ func UpdateCandidate(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Candidate updated successfully"})
+
+	// Publish updated candidate data to Kafka
+	err = utils.PublishMessage("candidates", uniqueID, candidate)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to publish updated candidate data to Kafka"})
+		return
+	}
 }
